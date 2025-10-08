@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "separators.h": "c",
+        "tokenizer.h": "c",
+        "ctype.h": "c",
+        "command_executor.h": "c"
+    }
+}

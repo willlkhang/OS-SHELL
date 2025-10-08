@@ -1,0 +1,3 @@
+gcc main.c signal_processor.c signal_processor.h -o a
+gcc main.c signal_processor.c signal_processor.h command.h parser.c parser.h utilities.h utilities.c separators.h -o a
+gcc main.c signal_processor.c signal_processor.h command.h parser.c parser.h utilities.h utilities.c separators.h separators.c tokenizer.h tokenizer.c builtins_executor.h builtins_executor.c command_executor.h command_executor.c -o a
