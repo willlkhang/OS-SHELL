@@ -11,7 +11,7 @@
 
 int main(int argc, char *argv[])
 {
-    activate_signal_handlers();
+    //activate_signal_handlers();
 
     char *line = NULL, prompt_buf[128];
     strcpy(prompt_buf, "% ");

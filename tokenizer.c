@@ -5,6 +5,84 @@
 #include <string.h>
 #include <ctype.h>
 
+void process_quoted_string(const char **p_ptr, char *tokens[], int *ntok){
+    const char *p = *p_ptr;
+    char quote = *p++;
+    const char *start = p;
+    char buf[4096];
+    int bi = 0;
+    
+    while (*p && *p != quote) {
+        if (*p == '\\' && quote == '"' && *(p+1) != '\0') {
+            ++p;
+
+            buf[bi++] = *p ? *p : '\\';
+            if (*p) ++p;
+
+        } else {
+            buf[bi++] = *p++;
+        }
+        if (bi >= (int)sizeof(buf)-1) 
+            break;
+    }
+
+    buf[bi] = '\0';
+    tokens[(*ntok)++] = strdup(buf);
+    if (*p == quote) ++p;
+
+    *p_ptr = p;
+}
+
+void process_escaped_character(const char **p_ptr, char *tokens[], int *ntok){
+    const char *p = *p_ptr;
+    ++p;
+    char tmp[2] = { *p ? *p : '\\', '\0' };
+
+    tokens[(*ntok)++] = strdup(tmp);
+    if (*p) ++p;
+
+    *p_ptr = p;
+}
+
+void process_control_operators(const char **p_ptr, char *tokens[], int *ntok){
+    //handle 2> separately 
+    const char *p = *p_ptr;
+    if (*p == '>' && *(p+1) == '>') { //support >> if you want (append) 
+        tokens[(*ntok)++] = strdup(">>");
+        p += 2;
+    } else if (*p == '2' && *(p+1) == '>' ) {
+        //handle "2>" (error redirection)
+        tokens[(*ntok)++] = strdup("2>");
+        p += 2;
+    } else {
+        char s[2] = { *p, '\0' };
+        tokens[(*ntok)++] = strdup(s);
+        ++p;
+    }
+
+    *p_ptr = p;
+}
+
+void process_normal_command(const char **p_ptr, char *tokens[], int *ntok){
+    const char *p = *p_ptr;
+    //normal token until space or special char
+    char buf[4096];
+    int bi = 0;
+    while (*p && !isspace((unsigned char)*p) && *p!='>' && *p!='<' && *p!='|' && *p!=';' && *p!='&') {
+        if (*p == '\\' && *(p+1) != '\0') {
+            ++p;
+            buf[bi++] = *p++;
+        } else {
+            buf[bi++] = *p++;
+        }
+
+        if (bi >= (int)sizeof(buf)-1) break;
+    }
+    buf[bi] = '\0';
+    tokens[(*ntok)++] = strdup(buf);
+    *p_ptr = p;
+}
+
 // return number of token, and token array for system execution
 int tokenize(const char *line, char *tokens[], int max_tokens) {
     int ntok = 0;
@@ -18,66 +96,29 @@ int tokenize(const char *line, char *tokens[], int max_tokens) {
         if (ntok >= max_tokens - 1) //breaking limit
             break;
 
-        if (*p == '\'' || *p == '"') {
-            char quote = *p++;
-            const char *start = p;
-            char buf[4096];
-            int bi = 0;
-            
-            while (*p && *p != quote) {
-                if (*p == '\\' && quote == '"' && *(p+1) != '\0') {
-                    ++p;
+        if (*p == '\'' || *p == '"') { //process single slash
+            process_quoted_string(&p, tokens, &ntok);
 
-                    buf[bi++] = *p ? *p : '\\';
-                    if (*p) ++p;
-
-                } else {
-                    buf[bi++] = *p++;
-                }
-                if (bi >= (int)sizeof(buf)-1) 
-                    break;
-            }
-
-            buf[bi] = '\0';
-            tokens[ntok++] = strdup(buf);
-            if (*p == quote) ++p;
-
-        } else if (*p == '\\') {
-            ++p;
-            char tmp[2] = { *p ? *p : '\\', '\0' };
-
-            tokens[ntok++] = strdup(tmp);
-            if (*p) ++p;
-
-        } else if (*p == '>' || *p == '<' || *p == '|' || *p == ';' || *p == '&') {
-            /* handle 2> separately */
-            if (*p == '>' && *(p+1) == '>') { /* support >> if you want (append) */
-                tokens[ntok++] = strdup(">>");
-                p += 2;
-            } else if (*p == '2' && *(p+1) == '>' ) {
-                /* handle "2>" (error redirection). This branch won't trigger on current char, but keep for completeness */
-                tokens[ntok++] = strdup("2>");
-                p += 2;
-            } else {
-                char s[2] = { *p, '\0' };
-                tokens[ntok++] = strdup(s);
-                ++p;
-            }
+        } else if (*p == '\\') { // process double slash
+            process_escaped_character(&p, tokens, &ntok);
+        } 
+        else if (*p == '>' || *p == '<' || *p == '|' || *p == ';' || *p == '&') {
+            process_control_operators(&p, tokens, &ntok);
         } else {
-            /* normal token until space or special char */
-            char buf[4096];
-            int bi = 0;
-            while (*p && !isspace((unsigned char)*p) && *p!='>' && *p!='<' && *p!='|' && *p!=';' && *p!='&') {
-                if (*p == '\\' && *(p+1) != '\0') {
-                    ++p;
-                    buf[bi++] = *p++;
-                } else {
-                    buf[bi++] = *p++;
-                }
-                if (bi >= (int)sizeof(buf)-1) break;
-            }
-            buf[bi] = '\0';
-            tokens[ntok++] = strdup(buf);
+            process_normal_command(&p, tokens, &ntok);
+            // char buf[4096];
+            // int bi = 0;
+            // while (*p && !isspace((unsigned char)*p) && *p!='>' && *p!='<' && *p!='|' && *p!=';' && *p!='&') {
+            //     if (*p == '\\' && *(p+1) != '\0') {
+            //         ++p;
+            //         buf[bi++] = *p++;
+            //     } else {
+            //         buf[bi++] = *p++;
+            //     }
+            //     if (bi >= (int)sizeof(buf)-1) break;
+            // }
+            // buf[bi] = '\0';
+            // tokens[ntok++] = strdup(buf);
         }
     }
     tokens[ntok] = NULL;
