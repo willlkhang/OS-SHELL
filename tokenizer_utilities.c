@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 void process_quoted_string(const char **p_ptr, char *tokens[], int *ntok){
     const char *p = *p_ptr;
@@ -85,4 +86,11 @@ void process_normal_command(const char **p_ptr, char *tokens[], int *ntok){
 int is_separator_token(const char *t) {
     if (!t) return 0;
     return (strcmp(t, pipeSep) == 0) || (strcmp(t, seqSep) == 0) || (strcmp(t, conSep) == 0);
+}
+
+void free_tokens(char *tokens[], int ntok) {
+    for (int i = 0; i < ntok; ++i) {
+        free(tokens[i]);
+        tokens[i] = NULL;
+    }
 }

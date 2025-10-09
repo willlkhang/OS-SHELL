@@ -36,14 +36,6 @@ int tokenize(const char *line, char *tokens[], int max_tokens) {
     return ntok;
 }
 
-//free tokens
-void free_tokens(char *tokens[], int ntok) {
-    for (int i = 0; i < ntok; ++i) {
-        free(tokens[i]);
-        tokens[i] = NULL;
-    }
-}
-
 int separateCommands(char *token[], Command command[]) {
     int i = 0;
     while (token[i]) ++i;

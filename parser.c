@@ -7,6 +7,7 @@
 #include "command.h"
 #include "separators.h"
 #include "tokenizer.h"
+#include "tokenizer_utilities.h"
 
 
 /* searchRedirection and buildCommandArgumentArray implementations
@@ -92,7 +93,9 @@ int parse_line(const char *line, CommandLine *cl) {
     /* convert tokens[] to modifiable array for separateCommands (it expects char*[] ownership) */
     /* tokens are strdup'd already so it's OK */
     int ncmds = separateCommands(tokens, cl->commands);
-    if (ncmds <= 0) { free_tokens(tokens, ntok); return ncmds; }
+    if (ncmds <= 0) { 
+        free_tokens(tokens, ntok); return ncmds; 
+    }
 
     /* for each command, search redirections and build argv */
     for (int i = 0; i < ncmds; ++i) {
