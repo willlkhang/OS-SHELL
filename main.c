@@ -25,10 +25,13 @@ int main(int argc, char *argv[])
     if(h == NULL) perror("Faield to allocate history"), exit(1);
     setup_history(h);
 
+
     while (1) {
         int flag = prompt_eater(&line, prompt_buf, &len, &nread);
         if(flag == 0) break;
         if(flag == 1) continue;
+
+        history_add(h, line);
 
         //parse user's input to struct Commandline
         CommandLine cl;

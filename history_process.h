@@ -8,6 +8,7 @@
 void setup_history(history *h);
 void history_add(history *h, const char *cmd);
 void print_history(history *h);
+void clean_history(history *h);
 void history_free(history *h);
 
 #endif // HISTORY_PROCESS_H

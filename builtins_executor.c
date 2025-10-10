@@ -64,10 +64,10 @@ int builtin_handler(Command *cmd, char prompt_buf[], size_t prompt_buf_len, hist
         return 1;
     }
 
-    if ((strcmp(cmd->argv[0], "!clsh") == 0) || (strcmp(cmd->argv[0], "cleanHistory") == 0)){
-        history_free(h);
+    if ((strcmp(cmd->argv[0], "!clsh") == 0) || (strcmp(cmd->argv[0], "cleanHistory") == 0) || (strcmp(cmd->argv[0], "clsh") == 0)){
+        clean_history(h);
         return 1;
     }
 
-    return 0; /* not a builtin we handle here */
+    return 0;
 }

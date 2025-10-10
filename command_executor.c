@@ -90,9 +90,9 @@ void execute_commads(int *ncmd_ptr, CommandLine *cl, char *promptbuffer, history
         // if there is not pipe detected
         Command *c = curr_commamd;
 
-        const char *history_c = c->argv[0];
-        history_add(h, history_c);
-        
+        // const char *history_c = c->argv[0];
+        // history_add(h, history_c);
+
         //run builtins
         if (builtin_handler(c, promptbuffer, MAX_BUF_LEN, h)) {
             //if there is builtins, the method will execute, and increase the index stream

@@ -36,6 +36,15 @@ void print_history(history *h){
     }
 }
 
+void clean_history(history *h){
+    for (int i = 0; i < h->history_cnt; i++){
+        free(h->history_log[i]);
+    }
+    free(h->history_log);
+
+    setup_history(h);
+}
+
 // Free all memory used by the history struct
 void history_free(history *h) {
     for (int i = 0; i < h->history_cnt; i++) {
