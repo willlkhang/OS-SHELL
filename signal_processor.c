@@ -30,6 +30,6 @@ void activate_signal_handlers(){
 
 
     signal(SIGINT, doing_nothing_method); // this means when SIGINT is enter, the program will jump into doing nothing method
-    signal(SIGTSTP, doing_nothing_method); // this means when SIGINT is enter, the program will jump into doing nothing method
-    signal(SIGQUIT, doing_nothing_method); // this means when SIGINT is enter, the program will jump into doing nothing method
+    signal(SIGTSTP, doing_nothing_method); // this means when SIGTSTP is enter, the program will jump into doing nothing method
+    signal(SIGQUIT, doing_nothing_method); // this means when SIGQUIT is enter, the program will jump into doing nothing method
 }

@@ -1,5 +1,6 @@
 #include "builtins_executor.h"
 #include "history_process.h"
+#include "history_process.h"
 
 #include <string.h> //prefix str*
 #include <stdio.h> // print
@@ -59,6 +60,10 @@ int builtin_handler(Command *cmd, char prompt_buf[], size_t prompt_buf_len) {
 
     /* NOTE: history, !! and !n should be handled BEFORE parse_line or
        you can implement history lookup here (requires history store). */
+
+    if ((strcmp(cmd->argv[0], "!history") == 0) || (strcmp(cmd->argv[0], "history") == 0)){
+        
+    }
 
     return 0; /* not a builtin we handle here */
 }

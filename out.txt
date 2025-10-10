@@ -1,1 +1,26 @@
-Thu Oct  9 14:19:25 AWST 2025
+README
+README.md
+a
+builtins_executor.c
+builtins_executor.h
+command.h
+command_executor.c
+command_executor.h
+command_setup.c
+command_setup.h
+history_process.c
+history_process.h
+main.c
+out.txt
+parser.c
+parser.h
+separators.c
+separators.h
+signal_processor.c
+signal_processor.h
+tokenizer.c
+tokenizer.h
+tokenizer_utilities.c
+tokenizer_utilities.h
+utilities.c
+utilities.h

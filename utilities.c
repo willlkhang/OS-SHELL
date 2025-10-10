@@ -17,7 +17,10 @@ void free_commands(Command *cmds, int n){
 void apply_redirections(const Command *cmd){
     if (cmd->stdin_file){
         int fd = open(cmd->stdin_file, O_RDONLY);
-        if (fd < 0){ perror("open <"); exit(1); }
+        if (fd < 0){ 
+            perror("open <"); 
+            exit(1); 
+        }
         if (dup2(fd, STDIN_FILENO) < 0){ 
             perror("dup2 <"); 
             exit(1); 
@@ -77,13 +80,15 @@ int run_pipeline(Command *cmds, int start, int end, int background){
             if (i > 0){
                 if (dup2(fds[2*(i-1)], STDIN_FILENO) < 0){ 
                     perror("dup2 stdin"); 
-                    _exit(1); }
+                    exit(1); 
+                }
             }
             // hook stdout to next pipe if not last
             if (i < n - 1){
                 if (dup2(fds[2*i + 1], STDOUT_FILENO) < 0){ 
                     perror("dup2 stdout"); 
-                    _exit(1); }
+                    exit(1); 
+                }
             }
 
             // close all pipe fds in child
