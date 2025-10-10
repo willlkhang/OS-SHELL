@@ -1,6 +1,6 @@
 #include "builtins_executor.h"
 #include "history_process.h"
-#include "history_process.h"
+#include "history.h"
 
 #include <string.h> //prefix str*
 #include <stdio.h> // print
@@ -20,7 +20,7 @@ int is_builtins(char *cmd)
 }
 
 
-int builtin_handler(Command *cmd, char prompt_buf[], size_t prompt_buf_len) {
+int builtin_handler(Command *cmd, char prompt_buf[], size_t prompt_buf_len, history *h) {
 
     if (strcmp(cmd->argv[0], "exit") == 0 || strcmp(cmd->argv[0], "bye") == 0) {
         printf("\n\nYou terminated the SHELL\n\n");
@@ -58,11 +58,15 @@ int builtin_handler(Command *cmd, char prompt_buf[], size_t prompt_buf_len) {
         return 1;
     }
 
-    /* NOTE: history, !! and !n should be handled BEFORE parse_line or
-       you can implement history lookup here (requires history store). */
 
     if ((strcmp(cmd->argv[0], "!history") == 0) || (strcmp(cmd->argv[0], "history") == 0)){
-        
+        print_history(h);
+        return 1;
+    }
+
+    if ((strcmp(cmd->argv[0], "!clsh") == 0) || (strcmp(cmd->argv[0], "cleanHistory") == 0)){
+        history_free(h);
+        return 1;
     }
 
     return 0; /* not a builtin we handle here */

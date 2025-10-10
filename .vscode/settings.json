@@ -3,6 +3,7 @@
         "separators.h": "c",
         "tokenizer.h": "c",
         "ctype.h": "c",
-        "command_executor.h": "c"
+        "command_executor.h": "c",
+        "history.h": "c"
     }
 }

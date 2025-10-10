@@ -5,6 +5,7 @@
 #include "command_executor.h"
 #include "utilities.h"
 #include "builtins_executor.h"
+#include "history_process.h"
 
 #define MAX_BUF_LEN 524
 
@@ -58,7 +59,7 @@ void run_background(Command *c){
     }
 }
 
-void execute_commads(int *ncmd_ptr, CommandLine *cl, char *promptbuffer){
+void execute_commads(int *ncmd_ptr, CommandLine *cl, char *promptbuffer, history *h){
     int ncmd = *ncmd_ptr;
 
     for (int i = 0; i < ncmd; ) {
@@ -89,8 +90,11 @@ void execute_commads(int *ncmd_ptr, CommandLine *cl, char *promptbuffer){
         // if there is not pipe detected
         Command *c = curr_commamd;
 
+        const char *history_c = c->argv[0];
+        history_add(h, history_c);
+        
         //run builtins
-        if (builtin_handler(c, promptbuffer, MAX_BUF_LEN)) {
+        if (builtin_handler(c, promptbuffer, MAX_BUF_LEN, h)) {
             //if there is builtins, the method will execute, and increase the index stream
             i++;
             continue;

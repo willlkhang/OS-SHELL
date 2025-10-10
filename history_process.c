@@ -4,45 +4,42 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_HISTORY_log 999
-
-char *history[MAX_HISTORY_log];
-int history_cnt = 0;
-int history_idx = 0;
-
-void add_cmd_to_history(char *cmd){
-    if(history[history_idx] != NULL){
-        free(history[history_idx]);
-    }
-
-    history[history_idx] = strdup(cmd); //deep copy string
-    
-    if(history[history_idx] == NULL){
-        perror("strdup error");
-        //exit (1); 
-    }
-    history_idx = (history_idx+1)%MAX_HISTORY_log; // avoid exceeding the limit
-
-    if(history_idx < MAX_HISTORY_log)
-        history_cnt++;
+void setup_history(history *h){
+    h->history_idx = 0;
+    h->history_cnt = 0;
+    h->capacity = MAX_HISTORY_log;
+    h->history_log = malloc(h->capacity * sizeof(char *));
 }
 
-void print_history(){
-    printf("Command history log:\n");
-    
-    int start_idx = (history_cnt < MAX_HISTORY_log) ? 0 : history_idx;
+void history_add(history *h, const char *cmd){
+    // Don't add empty commands or duplicates of the last command
+    if (strlen(cmd) == 0 || (h->history_cnt > 0 && strcmp(h->history_log[h->history_cnt - 1], cmd) == 0)) {
+        return;
+    }
 
-    for(int i = 0; i < history_cnt; i++){
-        int curr_idx = (start_idx+1)%MAX_HISTORY_log;
-        printf("%d: %s\n", i + 1, history[curr_idx]);
+    // If we've reached capacity, double it
+    if (h->history_cnt >= h->capacity) {
+        h->capacity *= 2;
+        h->history_log = realloc(h->history_log, h->capacity * sizeof(char *));
+    }
+
+    // Add the new command
+    h->history_log[h->history_cnt] = strdup(cmd);
+    h->history_cnt++;
+    h->history_idx = h->history_cnt; // Reset index to the end
+}
+
+void print_history(history *h){
+    for (int i = 0; i < h->history_cnt; i++) {
+        // Print with a number, starting from 1 for readability
+        printf("  %d: %s\n", i + 1, h->history_log[i]);
     }
 }
 
-void clean_history(){ //deep release
-    for(int i = 0; i < MAX_HISTORY_log; i++){
-        if(history[i] != NULL){
-            free(history[i]);
-            history[i] = NULL;
-        }
+// Free all memory used by the history struct
+void history_free(history *h) {
+    for (int i = 0; i < h->history_cnt; i++) {
+        free(h->history_log[i]);
     }
+    free(h->history_log);
 }

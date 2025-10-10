@@ -4,6 +4,8 @@
 #include "parser.h"
 #include "builtins_executor.h"
 #include "command_executor.h"
+#include "history_process.h"
+#include "history.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +21,10 @@ int main(int argc, char *argv[])
     size_t len = 0;
     ssize_t nread;
 
+    history *h = malloc(sizeof(history));
+    if(h == NULL) perror("Faield to allocate history"), exit(1);
+    setup_history(h);
+
     while (1) {
         int flag = prompt_eater(&line, prompt_buf, &len, &nread);
         if(flag == 0) break;
@@ -31,12 +37,13 @@ int main(int argc, char *argv[])
         if(!parser_erorr(ncmd)) continue; // if there is error, rise error, and skip that error
         
         //execute commands in cl
-        execute_commads(&ncmd, &cl, prompt_buf);
+        execute_commads(&ncmd, &cl, prompt_buf, h);
 
         //free the parsed command from user's input string
         free_parsed_commands(cl.commands, ncmd);
     }
-
+    
+    history_free(h);
     free(line);
     return 0;
 }

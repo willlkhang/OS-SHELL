@@ -8,6 +8,8 @@ command_executor.c
 command_executor.h
 command_setup.c
 command_setup.h
+foo
+history.h
 history_process.c
 history_process.h
 main.c
