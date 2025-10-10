@@ -6,6 +6,7 @@
 #include "command_executor.h"
 #include "history_process.h"
 #include "history.h"
+#include "history_up_down_key.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +31,9 @@ int main(int argc, char *argv[])
         int flag = prompt_eater(&line, prompt_buf, &len, &nread);
         if(flag == 0) break;
         if(flag == 1) continue;
+
+        //get_line_with_history(line, sizeof(line), h);
+        printf("\n"); // Move to the next line after command entry
 
         history_add(h, line);
 

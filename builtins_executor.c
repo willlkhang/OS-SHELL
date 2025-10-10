@@ -59,7 +59,7 @@ int builtin_handler(Command *cmd, char prompt_buf[], size_t prompt_buf_len, hist
     }
 
 
-    if ((strcmp(cmd->argv[0], "!history") == 0) || (strcmp(cmd->argv[0], "history") == 0)){
+    if ((strcmp(cmd->argv[0], "!history") == 0) || (strcmp(cmd->argv[0], "history") == 0) || (strcmp(cmd->argv[0], "hst") == 0)){
         print_history(h);
         return 1;
     }
