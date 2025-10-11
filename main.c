@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
         if(flag == 1) continue;
 
         //get_line_with_history(line, sizeof(line), h);
-        printf("\n"); // Move to the next line after command entry
+        //printf("\n"); // Move to the next line after command entry
 
         history_add(h, line);
 
