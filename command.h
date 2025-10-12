@@ -8,7 +8,7 @@ typedef struct Command_struct
     //parser helper
     int first; // index of first token
     int last; //index of last token
-    char *sep; //wildcard
+    char *sep; //separators
 
     //execution
     char *pathname;
