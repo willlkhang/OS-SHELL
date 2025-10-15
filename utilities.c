@@ -107,11 +107,13 @@ int run_pipeline(Command *cmds, int start, int end, int background){
             apply_redirections(&cmds[start + i]);
 
             char** expand_argv = expand_wildcards(cmds[start + i].argv);
-            if(expand_argv == NULL || expand_argv[0]){
+            if(expand_argv == NULL || expand_argv[0] == NULL){
                 exit(0);
             }
             execvp(expand_argv[0], expand_argv);
+
             perror("execvp");
+
             free_expanded_argv(expand_argv);
             exit(1);
         }

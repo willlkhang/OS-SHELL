@@ -32,7 +32,7 @@ void history_add(history *h, const char *cmd){
 void print_history(history *h){
     for (int i = 0; i < h->history_cnt; i++) {
         // Print with a number, starting from 1 for readability
-        printf("  %d: %s\n", i + 1, h->history_log[i]);
+        printf("%%: %s\n", h->history_log[i]);
     }
 }
 
