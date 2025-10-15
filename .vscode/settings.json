@@ -4,6 +4,8 @@
         "tokenizer.h": "c",
         "ctype.h": "c",
         "command_executor.h": "c",
-        "history.h": "c"
+        "history.h": "c",
+        "utilities.h": "c",
+        "wildcard_handler.h": "c"
     }
 }

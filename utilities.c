@@ -1,6 +1,8 @@
 #include "utilities.h"
 #include "command.h"
 
+#include "wildcard_handler.h"
+
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -48,8 +50,14 @@ pid_t run_single(const Command *cmd){
     }
     if (pid == 0){
         apply_redirections(cmd);
-        execvp(cmd->argv[0], cmd->argv);
+
+        char **expanded_argv = expand_wildcards(cmd->argv);
+        if (expanded_argv == NULL || expanded_argv[0] == NULL) {
+            exit(0); 
+        }
+        execvp(expanded_argv[0], expanded_argv);
         perror("execvp");
+        free_expanded_argv(expanded_argv);
         exit(1);
     }
     return pid;
@@ -98,8 +106,13 @@ int run_pipeline(Command *cmds, int start, int end, int background){
             // per-command < and > (will override pipe ends if specified)
             apply_redirections(&cmds[start + i]);
 
-            execvp(cmds[start + i].argv[0], cmds[start + i].argv);
+            char** expand_argv = expand_wildcards(cmds[start + i].argv);
+            if(expand_argv == NULL || expand_argv[0]){
+                exit(0);
+            }
+            execvp(expand_argv[0], expand_argv);
             perror("execvp");
+            free_expanded_argv(expand_argv);
             exit(1);
         }
         pids[i] = pid;

@@ -1,5 +1,5 @@
-run: main.o signal_processor.o parser.o utilities.o separators.o tokenizer.o builtins_executor.o command_executor.o tokenizer_utilities.o command_setup.o history_process.o
-	gcc main.o signal_processor.o parser.o utilities.o separators.o tokenizer.o builtins_executor.o command_executor.o tokenizer_utilities.o command_setup.o history_process.o -o run
+run: main.o signal_processor.o parser.o utilities.o separators.o tokenizer.o builtins_executor.o command_executor.o tokenizer_utilities.o command_setup.o history_process.o wildcard_handler.o
+	gcc main.o signal_processor.o parser.o utilities.o separators.o tokenizer.o builtins_executor.o command_executor.o tokenizer_utilities.o command_setup.o history_process.o wildcard_handler.o -o run
 
 main.o: main.c signal_processor.h command.h parser.h utilities.h separators.h tokenizer.h builtins_executor.h command_executor.h tokenizer_utilities.h command_setup.h history.h history_process.h
 	gcc -c main.c
@@ -34,8 +34,8 @@ command_setup.o: command_setup.c command_setup.h
 history_process.o: history_process.c history_process.h
 	gcc -c history_process.c history_process.h
 
-clean:
-	rm *.o
+wildcard_handler.o: wildcard_handler.c wildcard_handler.h
+	gcc -c wildcard_handler.c wildcard_handler.h
 
-cleanh:
-	rm *.o *.gch
+clean:
+	rm *.o *.gch run
