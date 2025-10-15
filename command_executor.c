@@ -28,7 +28,7 @@ int prompt_eater(char **line, char *promptbuffer, size_t *len, ssize_t *nread){
     if (*line[0] == '\0') 
         return 1;
 
-    return 0;
+    //return 0;
 }
 
 int parser_erorr(int ncmd){
@@ -51,7 +51,7 @@ int parser_erorr(int ncmd){
     if (ncmd == 0) 
         return 1; // dont not anything
 
-    return 0;
+    //return 0;
 }
 
 void run_background(Command *c){

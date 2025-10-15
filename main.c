@@ -6,7 +6,6 @@
 #include "command_executor.h"
 #include "history_process.h"
 #include "history.h"
-#include "history_up_down_key.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,14 +41,14 @@ int main(int argc, char *argv[])
         int ncmd = parse_line(line, &cl);
 
         if(!parser_erorr(ncmd)) continue; // if there is error, rise error, and skip that error
-        
+
         //execute commands in cl
         execute_commads(&ncmd, &cl, prompt_buf, h);
 
         //free the parsed command from user's input string
         free_parsed_commands(cl.commands, ncmd);
     }
-    
+
     history_free(h);
     free(line);
     return 0;

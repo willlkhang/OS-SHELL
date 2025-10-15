@@ -1,7 +1,7 @@
-run: main.o signal_processor.o parser.o utilities.o separators.o tokenizer.o builtins_executor.o command_executor.o tokenizer_utilities.o command_setup.o history_process.o history_up_down_key.o
-	gcc main.o signal_processor.o parser.o utilities.o separators.o tokenizer.o builtins_executor.o command_executor.o tokenizer_utilities.o command_setup.o history_process.o history_up_down_key.o -o run
+run: main.o signal_processor.o parser.o utilities.o separators.o tokenizer.o builtins_executor.o command_executor.o tokenizer_utilities.o command_setup.o history_process.o
+	gcc main.o signal_processor.o parser.o utilities.o separators.o tokenizer.o builtins_executor.o command_executor.o tokenizer_utilities.o command_setup.o history_process.o -o run
 
-main.o: main.c signal_processor.h command.h parser.h utilities.h separators.h tokenizer.h builtins_executor.h command_executor.h tokenizer_utilities.h command_setup.h history.h history_process.h history_up_down_key.h
+main.o: main.c signal_processor.h command.h parser.h utilities.h separators.h tokenizer.h builtins_executor.h command_executor.h tokenizer_utilities.h command_setup.h history.h history_process.h
 	gcc -c main.c
 
 signal_processor.o: signal_processor.c signal_processor.h
@@ -33,9 +33,6 @@ command_setup.o: command_setup.c command_setup.h
 
 history_process.o: history_process.c history_process.h
 	gcc -c history_process.c history_process.h
-
-history_up_down_key.o: history_up_down_key.c history_up_down_key.h
-	gcc -c history_up_down_key.c history_up_down_key.h
 
 clean:
 	rm *.o
