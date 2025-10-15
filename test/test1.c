@@ -4,32 +4,24 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <ncurses.h>
+
 int main(){
-    // glob_t result;
-    // int ret;
+    initscr();
 
-    // //expand the pattern .c
-    // ret = glob("*.c", 0, NULL, &result);
+    // Print a string (similar to printf) to the virtual screen.
+    printw("Hello, ncurses!\n");
+    printw("Press any key to exit...");
 
-    // if(ret == 0){
-    //     for(size_t i = 0; i < result.gl_pathc; i++){
-    //         printf("%s\n", result.gl_pathv[i]);
-    //     }
-    // }
-    // else{
-    //     fprintf(stderr, "Not found\n");
-    // }
+    // Puts the virtual screen contents onto the actual screen.
+    refresh();
 
-    // globfree(&result);
+    // Wait for user input (a single character).
+    getch();
 
-    pid_t pid = fork();
-
-    if(pid < 0) perror("fork");
-    else if(pid == 0){
-        execvp("ls *.c", "ls *.c");
-    }
-    else
-        printf("this is parent process\n");
+    // End ncurses mode and restore the terminal.
+    endwin();
 
     return 0;
+
 }
