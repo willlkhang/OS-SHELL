@@ -25,8 +25,10 @@ int prompt_eater(char **line, char *promptbuffer, size_t *len, ssize_t *nread){
         (*line)[*nread-1] = '\0';
 
     //skip empty line
-    if (*line[0] == '\0') return 1;
+    if (*line[0] == '\0') 
+        return 1;
 
+    return 0;
 }
 
 int parser_erorr(int ncmd){
@@ -46,7 +48,10 @@ int parser_erorr(int ncmd){
         }
         return 1;
         }
-    if (ncmd == 0) return 1; // dont not anything
+    if (ncmd == 0) 
+        return 1; // dont not anything
+
+    return 0;
 }
 
 void run_background(Command *c){
