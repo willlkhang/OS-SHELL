@@ -6,6 +6,7 @@
 
 #include <stddef.h> // size_t
 
+//doxygen comment
 int is_builtins(char *cmd);
 int builtin_handler(Command *cmd, char prompt_buf[], size_t prompt_buf_len, history *h);
 
