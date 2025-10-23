@@ -56,6 +56,14 @@ char** expand_wildcards(char **argv){
                 }
                 new_argv[count++] = strdup(argv[i]);
             }
+            globfree(&result);
+        }
+        else{
+            if(count >= capacity - 1){
+                capacity *= 2;
+                new_argv = realloc(new_argv, capacity * sizeof(char*));
+            }
+            new_argv[count++] = strdup(argv[i]);
         }
     }
 
