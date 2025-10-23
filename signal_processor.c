@@ -15,7 +15,7 @@ void sigchld_processor(int signal) {
 
     //WNOHANG --> dont' block if not child's exited yet
     while((pid = waitpid(-1, &status, WNOHANG)) > 0) { //reap to avoid accumulating zomebie processes
-        printf("At status %d with %d\n", status, pid);
+        //printf("At status %d with %d\n", status, pid);
     }
 }
 
