@@ -14,11 +14,17 @@
  * This structure implements a circular buffer for storing command history,
  * allowing efficient addition and retrieval of previously executed commands.
  */
+typedef struct HistoryNode_struct {
+    char *command;                 /**< Command string */
+    struct HistoryNode_struct *prev; /**< Previous node */
+    struct HistoryNode_struct *next; /**< Next node */
+} HistoryNode;
+
 typedef struct history_struct{
-    char **history_log;         /**< Array of strings storing command history */
-    int history_cnt;            /**< Total number of commands in history */
-    int history_idx;            /**< Current index in the circular buffer */
-    int capacity;               /**< Maximum capacity of the history buffer */
+    HistoryNode *head;             /**< Oldest command */
+    HistoryNode *tail;             /**< Most recent command */
+    HistoryNode *nav;              /**< Navigation cursor for UI */
+    int history_cnt;               /**< Total number of commands in history */
 } history;
 
 #endif // HISTORY_H

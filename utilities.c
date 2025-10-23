@@ -40,6 +40,17 @@ void apply_redirections(const Command *cmd){
             exit(1); }
         close(fd);
     }
+    if (cmd->stderr_file){
+        int fd = open(cmd->stderr_file, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+        if (fd < 0){ 
+            perror("open 2>"); 
+            exit(1); 
+        }
+        if (dup2(fd, STDERR_FILENO) < 0){ 
+            perror("dup2 2>"); 
+            exit(1); }
+        close(fd);
+    }
 }
 
 pid_t run_single(const Command *cmd){

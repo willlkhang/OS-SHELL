@@ -63,4 +63,16 @@ void clean_history(history *h);
  */
 void history_free(history *h);
 
+/**
+ * @brief Expands history commands like !ls, !123, !!
+ * 
+ * This function processes history expansion commands and returns
+ * the expanded command string.
+ * 
+ * @param line The input line that may contain history expansion
+ * @param h Pointer to the history structure
+ * @return Expanded line or original line if no expansion needed
+ */
+char* expand_history_command(const char *line, history *h);
+
 #endif // HISTORY_PROCESS_H

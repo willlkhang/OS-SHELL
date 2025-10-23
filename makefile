@@ -1,7 +1,7 @@
-run: main.o signal_processor.o parser.o utilities.o separators.o tokenizer.o builtins_executor.o command_executor.o tokenizer_utilities.o command_setup.o history_process.o wildcard_handler.o
-	gcc main.o signal_processor.o parser.o utilities.o separators.o tokenizer.o builtins_executor.o command_executor.o tokenizer_utilities.o command_setup.o history_process.o wildcard_handler.o -o run
+run: main.o signal_processor.o parser.o utilities.o separators.o tokenizer.o builtins_executor.o command_executor.o tokenizer_utilities.o command_setup.o history_process.o wildcard_handler.o interactive_input.o
+	gcc main.o signal_processor.o parser.o utilities.o separators.o tokenizer.o builtins_executor.o command_executor.o tokenizer_utilities.o command_setup.o history_process.o wildcard_handler.o interactive_input.o -o run
 
-main.o: main.c signal_processor.h command.h parser.h utilities.h separators.h tokenizer.h builtins_executor.h command_executor.h tokenizer_utilities.h command_setup.h history.h history_process.h
+main.o: main.c signal_processor.h command.h parser.h utilities.h separators.h tokenizer.h builtins_executor.h command_executor.h tokenizer_utilities.h command_setup.h history.h history_process.h interactive_input.h
 	gcc -c main.c
 
 signal_processor.o: signal_processor.c signal_processor.h
@@ -37,5 +37,8 @@ history_process.o: history_process.c history_process.h
 wildcard_handler.o: wildcard_handler.c wildcard_handler.h
 	gcc -c wildcard_handler.c wildcard_handler.h
 
+interactive_input.o: interactive_input.c interactive_input.h
+	gcc -c interactive_input.c interactive_input.h
+
 clean:
-	rm *.o *.gch run
+	rm -f *.o *.gch run

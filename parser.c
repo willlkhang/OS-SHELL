@@ -26,9 +26,8 @@ void searchRedirection(char *token[], Command *cp) {
                 ++i;
             }
         } else if (strcmp(token[i], "2>") == 0) {
-            /* If you want to support stderr redirection, add field or reuse stdout_file for now */
             if (i+1 <= cp->last) {
-                /* For now we can ignore or treat specially; you can add stderr_file in struct */
+                cp->stderr_file = strdup(token[i+1]);
                 ++i;
             }
         }
@@ -71,6 +70,10 @@ void free_parsed_commands(Command *cmds, int n) {
         if (cmds[i].stdout_file) { 
             free(cmds[i].stdout_file); 
             cmds[i].stdout_file = NULL; 
+        }
+        if (cmds[i].stderr_file) { 
+            free(cmds[i].stderr_file); 
+            cmds[i].stderr_file = NULL; 
         }
         if (cmds[i].argv) {
             for (int j = 0; j < cmds[i].argc; ++j) 

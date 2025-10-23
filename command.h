@@ -8,7 +8,7 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
-#define MAX_COMMANDS 100
+#define MAX_COMMANDS 200
 
 /**
  * @brief Structure representing a single command with its execution context
@@ -28,7 +28,8 @@ typedef struct Command_struct
     int argc;               /**< Number of arguments */
     char **argv;            /**< Array of argument strings */
     char *stdin_file;       /**< File name for stdin redirection (NULL if not redirected) */
-    char *stdout_file;      /**< File name for stdout redirection (NULL if not redirected) */    
+    char *stdout_file;      /**< File name for stdout redirection (NULL if not redirected) */
+    char *stderr_file;      /**< File name for stderr redirection (NULL if not redirected) */
     char suffix;            /**< Command suffix: ' ', '&', ';', '|' */
 } 
 Command;
