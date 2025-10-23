@@ -20,42 +20,54 @@ void free_expanded_argv(char **argv){
     free(argv);
 }
 
+void add_arg_to_list(char ***new_argv_ptr, int *count, int *capacity, const char *arg_to_add) {
+    if (*count >= *capacity - 1) {
+        *capacity *= 2;
+
+        char **temp = realloc(*new_argv_ptr, *capacity * sizeof(char*));
+        if (!temp) {
+            perror("realloc");
+            exit(1); 
+        }
+        *new_argv_ptr = temp;
+    }
+
+    (*new_argv_ptr)[*count] = strdup(arg_to_add);
+    (*count)++;
+}
+
 char** expand_wildcards(char **argv){
     if(!argv || !argv[0])
         return NULL;
     
-    //build a new argument list, this mean is a command contains wc then make a new command
     int capacity = 100;
-    char** new_argv = malloc(capacity * sizeof(char*));
     int count = 0;
 
-    //start expanding the commnands
-    new_argv[count++] = strdup(argv[0]);
+    char** new_argv = malloc(capacity * sizeof(char*));
+    if (!new_argv) {
+        perror("malloc");
+        return NULL;
+    }
 
-    //traverse throughout the loop
+    add_arg_to_list(&new_argv, &count, &capacity, argv[0]);
+
     for(int i = 1; argv[i] != NULL; i++){
         if(has_wildcard(argv[i])){
             glob_t result;
-
             int ret = glob(argv[i], GLOB_NOCHECK | GLOB_TILDE, NULL, &result);
 
-            if(ret == 0){
-                //add all matched paths to new argc
+            if(ret == 0){ // Add all matched paths
                 for(size_t j = 0; j < result.gl_pathc; j++){
-                    if(count >= capacity - 1){
-                        capacity *= 2;
-                        new_argv = realloc(new_argv, capacity * sizeof(char*));
-                    }
-                    new_argv[count++] = strdup(result.gl_pathv[j]);
+                    add_arg_to_list(&new_argv, &count, &capacity, result.gl_pathv[j]);
                 }
             }
-            else{
-                if(count >= capacity - 1){
-                    capacity *= 2;
-                    new_argv = realloc(new_argv, capacity * sizeof(char*));
-                }
-                new_argv[count++] = strdup(argv[i]);
+            else { //no glob match
+                add_arg_to_list(&new_argv, &count, &capacity, argv[i]);
             }
+            globfree(&result);
+        }
+        else { //no wildcard catc
+            add_arg_to_list(&new_argv, &count, &capacity, argv[i]);
         }
     }
 

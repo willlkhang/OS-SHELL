@@ -20,6 +20,19 @@
 int has_wildcard(const char* str);
 
 /**
+ * @brief Adds an argument to a dynamically growing argument list
+ * 
+ * This function adds a new argument to an existing argument list,
+ * automatically expanding the list capacity as needed.
+ * 
+ * @param new_argv_ptr Pointer to the argument list array
+ * @param count Pointer to the current count of arguments
+ * @param capacity Pointer to the current capacity of the list
+ * @param arg_to_add The argument string to add
+ */
+void add_arg_to_list(char ***new_argv_ptr, int *count, int *capacity, const char *arg_to_add);
+
+/**
  * @brief Expands wildcard patterns in argument array
  * 
  * This function processes an array of command arguments and expands
