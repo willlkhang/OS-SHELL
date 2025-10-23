@@ -1,30 +1,49 @@
+/**
+ * @file command.h
+ * @brief Header file defining command structures and data types
+ * @author Ming Khang Nguyen, James Kuang 
+ * @date 23/10/2025
+ */
+
 #ifndef COMMAND_H
 #define COMMAND_H
 
 #define MAX_COMMANDS 100
 
+/**
+ * @brief Structure representing a single command with its execution context
+ * 
+ * This structure contains all the information needed to execute a command,
+ * including parser helper fields, execution parameters, and I/O redirection.
+ */
 typedef struct Command_struct
 {   
     //parser helper
-    int first; // index of first token
-    int last; //index of last token
-    char *sep; //wildcard
+    int first;                 /**< Index of first token in the command */
+    int last;                  /**< Index of last token in the command */
+    char *sep;                 /**< Separator character (wildcard) */
 
     //execution
-    char *pathname;
-    int argc;
-    char **argv;
-    char *stdin_file;   // if not NULL, points to the file name for stdin redirection
-    char *stdout_file;  // if not NULL, points to the file name for stdout redirection    
-    char suffix; // ' ', '&', ';', '|' 
+    char *pathname;         /**< Full path to the executable */
+    int argc;               /**< Number of arguments */
+    char **argv;            /**< Array of argument strings */
+    char *stdin_file;       /**< File name for stdin redirection (NULL if not redirected) */
+    char *stdout_file;      /**< File name for stdout redirection (NULL if not redirected) */    
+    char suffix;            /**< Command suffix: ' ', '&', ';', '|' */
 } 
 Command;
 
+/**
+ * @brief Structure representing a command line with multiple commands
+ * 
+ * This structure contains an array of commands and metadata about
+ * the command line execution context.
+ */
 typedef struct Command_line_Strucr
 {
-    Command commands[MAX_COMMANDS];
-    int amount; // number of commands from the input
-    int background; // for &
+    Command commands[MAX_COMMANDS]; /**< Array of commands in the command line */
+    int amount; /**< Number of commands in the command line */
+    int background; /**< Flag indicating if the command line should run in background */
 }
 CommandLine;
 
