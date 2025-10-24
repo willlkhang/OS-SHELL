@@ -46,3 +46,6 @@ make
 - ✅ History expansion (!x commands)
 - ✅ Signal handling
 - ✅ Zombie process prevention
+
+
+eris server 10.56.80.17
