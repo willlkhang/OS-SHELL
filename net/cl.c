@@ -43,78 +43,48 @@ int main(int argc, char *argv[]) {
     printf("Connected to server at %s.\n", server_ip);
     
     char username[BUFFER_SIZE], password[BUFFER_SIZE];
+    char server_prompt[BUFFER_SIZE]; //for reading prompts liek username:
     
-    printf("Enter username: ");
-    fgets(username, sizeof(username), stdin);
-    username[strcspn(username, "\n")] = 0;
+    read_line(sock, server_prompt, BUFFER_SIZE); //read the username
+    printf("%s", server_prompt); //print prompt
 
-    printf("Enter password: ");
-    fgets(password, sizeof(password), stdin);
-    password[strcspn(password, "\n")] = 0;
+    fgets(username, sizeof(username), stdin); //get password from user input for socket to read
+    write_all(sock, username, strlen(username)); //write to socket where server is listening
 
-    uint8_t ulen = strlen(username);
-    uint8_t plen = strlen(password);
-    
-    size_t auth_msg_size = 1 + 1 + ulen + 1 + plen;
-    char *auth_msg = malloc(auth_msg_size);
-    auth_msg[0] = 'A';
-    auth_msg[1] = ulen;
-    memcpy(auth_msg + 2, username, ulen);
-    auth_msg[2 + ulen] = plen;
-    memcpy(auth_msg + 3 + ulen, password, plen);
+    readline(sock, server_prompt, stdin); //sever wait to read password
+    printf("%s", server_prompt); //print prompt
 
-    write_all(sock, auth_msg, auth_msg_size);
-    free(auth_msg);
-    
-    char auth_response[2];
-    if (read_all(sock, auth_response, 2) != 0 || auth_response[0] != 'R') {
-        fprintf(stderr, "Failed to get valid authentication response.\n");
-        close(sock);
-        return 1;
+    fgets(password, sizeof(password), stdin); //get password from user input for socket to read
+    write_all(sock, password, strlen(password)); //send to server
+
+    char auth_response[BUFFER_SIZE];
+    read_line(sock, auth_response, BUFFER_SIZE);
+    printf("Server: %s\n", auth_response);
+
+    if(strcmp(auth_response, "Authentication failed", 21) == 0){
+        close(sock); return 0; //exit the program
     }
-    
-    if (auth_response[1] == '1') {
-        printf("Incorrect username or password.\n");
-        close(sock);
-        return 0;
-    }
-    
-    printf("Authentication successful!\n");
-    while(1) {
-        printf("> ");
-        fgets(buffer, BUFFER_SIZE, stdin);
-        buffer[strcspn(buffer, "\n")] = 0;
-        
-        uint16_t msg_len = strlen(buffer);
-        uint16_t msg_len_net = htons(msg_len);
-        
-        char client_opcode = 'M';
-        write_all(sock, &client_opcode, 1);
-        write_all(sock, &msg_len_net, sizeof(uint16_t));
-        write_all(sock, buffer, msg_len);
 
-        char server_opcode;
-        if (read_all(sock, &server_opcode, 1) != 0 || server_opcode != 'S') {
-            fprintf(stderr, "Connection lost or invalid response from server.\n");
-            break;
-        }
+    //communication 
+    while(1){
+        //sever open listenning
+        readline(sock, server_prompt, BUFFER_SIZE);
+        printf("%s", server_prompt);
 
-        uint16_t response_len_net;
-        read_all(sock, &response_len_net, sizeof(uint16_t));
-        uint16_t response_len = ntohs(response_len_net);
+        //client respond and send to where sever is listening.
+        fgets(buffer, BUFFER_SIZE, stdin); //user input from terminal
+        write_all(sock, buffer, strlen(buffer)); // send to server
 
+        //read sever respond
         char response_text[BUFFER_SIZE];
-        read_all(sock, response_text, response_len);
-        response_text[response_len] = '\0';
-        
-        printf("Server: %s\n", response_text);
-
-        if (strcmp(buffer, "quit") == 0) {
-            break;
+        if(read_line(sock, response_text, BUFFER_SIZE) <= 0){
+            printf("Sever disconnected\n"); break;
         }
+        printf("Server: %s\n", response_text); // display to user what sever respond
+
+        buffer[strcspn(buffer, '\n')] == 0; //skipp enter key
+        if(strcmp(buffer, "quit") == 0 || strcmp(buffer, "bye") == 0) break;
     }
-    
     close(sock);
     return 0;
 }
-

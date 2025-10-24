@@ -37,87 +37,63 @@ void *handle_client(void *arg) {
     char password[PASSWORD_MAX_LEN + 1] = {0};
     char buffer[BUFFER_SIZE];
 
-    // --- 1. Authentication Phase ---
-    uint8_t opcode;
-    if (read_all(client_sock, &opcode, 1) != 0 || opcode != 'A') {
-        fprintf(stderr, "Invalid opcode or connection closed during auth.\n");
+    ssize_t read_status;
+
+    write_all(client_sock, "Username: ", 50);
+    read_status = read_line(client_sock, username, USERNAME_MAX_LEN + 1);
+    if(read_status <= 0){
+        fprintf(stderr, "Connection terminated during username prompt\n");
         close(client_sock);
         return NULL;
     }
 
-    uint8_t username_len, password_len;
-    read_all(client_sock, &username_len, 1);
-    read_all(client_sock, username, username_len);
-    read_all(client_sock, &password_len, 1);
-    read_all(client_sock, password, password_len);
+    write_all(client_sock, "Password: ", 50);
+    read_status = read_line(client_sock, password, PASSWORD_MAX_LEN + 1);
+    if(read_status <= 0){
+        fprintf(stderr, "Connection terminated during password prompt\n");
+        close(client_sock);
+        return NULL;
+    }
 
     int authenticated = 0;
-    for (int i = 0; i < NUM_USERS; i++) {
-        if (strcmp(user_db[i].username, username) == 0 &&
-            strcmp(user_db[i].password, password) == 0) {
+    for(int i = 0; i < NUM_USERS; i++){ //check if the enter account is on database
+        if(strcmp(user_db[i].username, username) == 0 && strcmp(user_db[i].password, password) == 0){
             authenticated = 1;
             break;
         }
     }
 
-    char response[2] = {'R', authenticated ? '0' : '1'};
-    write_all(client_sock, response, 2);
-    
-    if (!authenticated) {
-        printf("Authentication failed for user '%s'. Closing connection.\n", username);
+    if(!authenticated){ //throw error exception for incorrect account
+        printf('Username or Password is incorrect, Please check again...\n');
+        write_all(client_sock, "Authentication failed.\r\n", 24);
         close(client_sock);
         return NULL;
     }
-    printf("User '%s' authenticated successfully.\n", username);
 
-    // --- 2. Message Exchange Phase ---
-    while (1) {
-        if (read_all(client_sock, &opcode, 1) != 0 || opcode != 'M') {
-             fprintf(stderr, "Invalid opcode or connection closed by %s.\n", username);
-             break;
+    //otherwise, when authentication is 1 which is found from the db
+    print("User '%s' authenticate successfully\n", username);
+    write_all(client_sock, "Authentication successful!\r\n", 28);
+
+    while(1){
+        write_all(client_sock, "> ", 2); 
+
+        read_status = read_line(client_sock, buffer, BUFFER_SIZE); //take client input to buffer
+        if(read_status <= 0){
+            fprintf(stderr, "Connection closed by %s\n", username, buffer);
         }
 
-        uint16_t msg_len_net;
-        read_all(client_sock, &msg_len_net, sizeof(uint16_t));
-        uint16_t msg_len = ntohs(msg_len_net);
+        printf("Received from %s: %s\n", username, buffer);
 
-        if (msg_len >= BUFFER_SIZE) {
-            fprintf(stderr, "Message too long from %s.\n", username);
-            break;
-        }
-
-        read_all(client_sock, buffer, msg_len);
-        buffer[msg_len] = '\0';
-        printf("Received from '%s': %s\n", username, buffer);
-        
         char response_text[BUFFER_SIZE];
-        if (strcmp(buffer, "quit") == 0) {
-            strcpy(response_text, "Good-bye!");
-        } else {
-            // This safer approach prevents the compiler warning.
-            const char *prefix = "You said ";
-            size_t prefix_len = strlen(prefix);
-
-            // Copy the prefix into the response buffer.
-            strncpy(response_text, prefix, BUFFER_SIZE - 1);
-            response_text[BUFFER_SIZE - 1] = '\0'; // Ensure null termination
-
-            // Append the client's message, but only up to the remaining space.
-            // We subtract 1 again for the null terminator.
-            strncat(response_text, buffer, BUFFER_SIZE - prefix_len - 1);
+        if(strcmp(buffer, "quit") == 0 || strcmp(buffer, "bye") == 0){
+            strcpy(response_text, "Goodbye!\n\n");
+            write_all(client_sock, response_text, strlen(response_text));
+            printf("Client %s disconnected\n", username);
+            break; //terminated clien connection --> break the loop
         }
-
-        uint16_t response_len = strlen(response_text);
-        uint16_t response_len_net = htons(response_len);
-        
-        char server_response_opcode = 'S';
-        write_all(client_sock, &server_response_opcode, 1);
-        write_all(client_sock, &response_len_net, sizeof(uint16_t));
-        write_all(client_sock, response_text, response_len);
-        
-        if (strcmp(buffer, "quit") == 0) {
-            printf("Client '%s' disconnected.\n", username);
-            break;
+        else{
+            snprintf(response_text, BUFFER_SIZE, "You said: %s\r\n", buffer);
+            write_all(client_sock, response_text, strlen(response_text));
         }
     }
 
