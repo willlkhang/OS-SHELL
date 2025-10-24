@@ -40,5 +40,8 @@ wildcard_handler.o: wildcard_handler.c wildcard_handler.h
 interactive_input.o: interactive_input.c interactive_input.h
 	gcc -c interactive_input.c interactive_input.h
 
+cls:
+	rm -f *.o *.gch
+
 clean:
 	rm -f *.o *.gch run

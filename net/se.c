@@ -39,7 +39,7 @@ void *handle_client(void *arg) {
 
     ssize_t read_status;
 
-    write_all(client_sock, "Username: ", 50);
+    write_all(client_sock, "Username: ", 10);
     read_status = read_line(client_sock, username, USERNAME_MAX_LEN + 1);
     if(read_status <= 0){
         fprintf(stderr, "Connection terminated during username prompt\n");
@@ -47,7 +47,7 @@ void *handle_client(void *arg) {
         return NULL;
     }
 
-    write_all(client_sock, "Password: ", 50);
+    write_all(client_sock, "Password: ", 10);
     read_status = read_line(client_sock, password, PASSWORD_MAX_LEN + 1);
     if(read_status <= 0){
         fprintf(stderr, "Connection terminated during password prompt\n");
@@ -64,14 +64,14 @@ void *handle_client(void *arg) {
     }
 
     if(!authenticated){ //throw error exception for incorrect account
-        printf('Username or Password is incorrect, Please check again...\n');
+        printf("Username or Password is incorrect, Please check again...\n");
         write_all(client_sock, "Authentication failed.\r\n", 24);
         close(client_sock);
         return NULL;
     }
 
     //otherwise, when authentication is 1 which is found from the db
-    print("User '%s' authenticate successfully\n", username);
+    printf("User '%s' authenticate successfully\n", username);
     write_all(client_sock, "Authentication successful!\r\n", 28);
 
     while(1){
@@ -79,7 +79,7 @@ void *handle_client(void *arg) {
 
         read_status = read_line(client_sock, buffer, BUFFER_SIZE); //take client input to buffer
         if(read_status <= 0){
-            fprintf(stderr, "Connection closed by %s\n", username, buffer);
+            fprintf(stderr, "Connection closed by %s\n", username);
         }
 
         printf("Received from %s: %s\n", username, buffer);
@@ -92,11 +92,15 @@ void *handle_client(void *arg) {
             break; //terminated clien connection --> break the loop
         }
         else{
-            snprintf(response_text, BUFFER_SIZE, "You said: %s\r\n", buffer);
+            const char *prefix = "You said: ";
+            const char *suffix = "\r\n";
+
+            int reply_len = BUFFER_SIZE - strlen(prefix) - strlen(suffix) - 1;
+
+            snprintf(response_text, BUFFER_SIZE, "%s%.*s%s", prefix, reply_len, buffer, suffix);
             write_all(client_sock, response_text, strlen(response_text));
         }
     }
-
     close(client_sock);
     return NULL;
 }

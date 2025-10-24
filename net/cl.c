@@ -44,46 +44,72 @@ int main(int argc, char *argv[]) {
     
     char username[BUFFER_SIZE], password[BUFFER_SIZE];
     char server_prompt[BUFFER_SIZE]; //for reading prompts liek username:
+
+    if (read_all(sock, server_prompt, 10) != 0) { //advoid deadlock
+        fprintf(stderr, "Server disconnected during authentication\n");
+        close(sock);
+        return 1;
+    }
+    server_prompt[10] = '\0'; //sikipping enterkey
+    printf("%s", server_prompt); // Print the prompt
     
-    read_line(sock, server_prompt, BUFFER_SIZE); //read the username
-    printf("%s", server_prompt); //print prompt
+    fgets(username, sizeof(username), stdin);
+    write_all(sock, username, strlen(username)); //send to sever
 
-    fgets(username, sizeof(username), stdin); //get password from user input for socket to read
-    write_all(sock, username, strlen(username)); //write to socket where server is listening
+    //sever waiting to read password from user
+    if (read_all(sock, server_prompt, 10) != 0) { 
+        fprintf(stderr, "Server disconnected during auth\n");
+        close(sock);
+        return 1;
+    }
+    server_prompt[10] = '\0'; // Null-terminate
+    printf("%s", server_prompt); // Print the prompt
+    
+    // Get password from user
+    fgets(password, sizeof(password), stdin);
+    write_all(sock, password, strlen(password)); // Send it
 
-    readline(sock, server_prompt, stdin); //sever wait to read password
-    printf("%s", server_prompt); //print prompt
-
-    fgets(password, sizeof(password), stdin); //get password from user input for socket to read
-    write_all(sock, password, strlen(password)); //send to server
-
+    // Read auth response (this IS a line, so read_line is correct)
     char auth_response[BUFFER_SIZE];
-    read_line(sock, auth_response, BUFFER_SIZE);
+    if (read_line(sock, auth_response, BUFFER_SIZE) <= 0) {
+        fprintf(stderr, "Server disconnected during auth response\n");
+        close(sock);
+        return 1;
+    }
     printf("Server: %s\n", auth_response);
 
-    if(strcmp(auth_response, "Authentication failed", 21) == 0){
-        close(sock); return 0; //exit the program
+    if (strncmp(auth_response, "Authentication failed", 21) == 0) {
+        close(sock);
+        return 0;
     }
 
-    //communication 
-    while(1){
-        //sever open listenning
-        readline(sock, server_prompt, BUFFER_SIZE);
-        printf("%s", server_prompt);
-
-        //client respond and send to where sever is listening.
-        fgets(buffer, BUFFER_SIZE, stdin); //user input from terminal
-        write_all(sock, buffer, strlen(buffer)); // send to server
-
-        //read sever respond
-        char response_text[BUFFER_SIZE];
-        if(read_line(sock, response_text, BUFFER_SIZE) <= 0){
-            printf("Sever disconnected\n"); break;
+    // --- 2. Message Exchange ---
+    while(1) {
+        // Read the server's "> " prompt (2 bytes)
+        if (read_all(sock, server_prompt, 2) != 0) { // <-- FIX: Use read_all
+            fprintf(stderr, "Server disconnected\n");
+            break;
         }
-        printf("Server: %s\n", response_text); // display to user what sever respond
+        server_prompt[2] = '\0'; // Null-terminate
+        printf("%s", server_prompt); // Print the "> "
+        
+        // Get input from user
+        fgets(buffer, BUFFER_SIZE, stdin);
+        write_all(sock, buffer, strlen(buffer)); // Send the line
 
-        buffer[strcspn(buffer, '\n')] == 0; //skipp enter key
-        if(strcmp(buffer, "quit") == 0 || strcmp(buffer, "bye") == 0) break;
+        // Read the server's response (this IS a line)
+        char response_text[BUFFER_SIZE];
+        if (read_line(sock, response_text, BUFFER_SIZE) <= 0) {
+            printf("Server disconnected.\n");
+            break;
+        }
+        
+        printf("Server: %s\n", response_text);
+
+        buffer[strcspn(buffer, "\n")] = 0; // Remove newline for "quit" check
+        if (strcmp(buffer, "quit") == 0) {
+            break;
+        }
     }
     close(sock);
     return 0;
