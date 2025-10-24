@@ -24,7 +24,8 @@ struct user {
 struct user user_db[] = {
     {"AAA", "aaa"},
     {"BBB", "bbb"},
-    {"CCC", "ccc"}
+    {"CCC", "ccc"},
+    {"test", "test"}
 };
 const int NUM_USERS = sizeof(user_db) / sizeof(struct user);
 
