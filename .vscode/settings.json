@@ -6,7 +6,8 @@
     "command_executor.h": "c",
     "history.h": "c",
     "utilities.h": "c",
-    "wildcard_handler.h": "c"
+    "wildcard_handler.h": "c",
+    "stdio.h": "c"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",

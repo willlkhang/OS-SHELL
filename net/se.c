@@ -40,21 +40,48 @@ void *handle_client(void *arg) {
 
     ssize_t read_status;
 
-    write_all(client_sock, "Username: ", 10);
-    read_status = read_line(client_sock, username, USERNAME_MAX_LEN + 1);
-    if(read_status <= 0){
+    // write_all(client_sock, "Username: ", 10);
+    // read_status = read_line(client_sock, username, USERNAME_MAX_LEN + 1);
+    // if(read_status <= 0){
+    //     fprintf(stderr, "Connection terminated during username prompt\n");
+    //     close(client_sock);
+    //     return NULL;
+    // }
+
+    // write_all(client_sock, "Password: ", 10);
+    // read_status = read_line(client_sock, password, PASSWORD_MAX_LEN + 1);
+    // if(read_status <= 0){
+    //     fprintf(stderr, "Connection terminated during password prompt\n");
+    //     close(client_sock);
+    //     return NULL;
+    // }
+
+    // --- 1. TELNET NEGOTIATION ---
+    // Server: "I WILL Echo characters."
+    telnet_send_cmd(client_sock, TELNET_WILL, TELOPT_ECHO);
+    // Server: "I WILL Suppress Go Ahead."
+    telnet_send_cmd(client_sock, TELNET_WILL, TELOPT_SGA);
+    // Client will respond, and telnet_read_char will handle it.
+
+    // --- 2. AUTHENTICATION ---
+    // Use telnet_write (no \r\n), not writeln
+    telnet_write(client_sock, "Username: ", 10);
+    // Use telnet_read_line (handles commands)
+    read_status = telnet_read_line(client_sock, username, USERNAME_MAX_LEN + 1);
+    if(read_status < 0){ // Note: 0 is a valid empty line
         fprintf(stderr, "Connection terminated during username prompt\n");
         close(client_sock);
         return NULL;
     }
 
-    write_all(client_sock, "Password: ", 10);
-    read_status = read_line(client_sock, password, PASSWORD_MAX_LEN + 1);
-    if(read_status <= 0){
+    telnet_write(client_sock, "Password: ", 10);
+    read_status = telnet_read_line(client_sock, password, PASSWORD_MAX_LEN + 1);
+    if(read_status < 0){
         fprintf(stderr, "Connection terminated during password prompt\n");
         close(client_sock);
         return NULL;
     }
+
 
     int authenticated = 0;
     for(int i = 0; i < NUM_USERS; i++){ //check if the enter account is on database
@@ -66,40 +93,36 @@ void *handle_client(void *arg) {
 
     if(!authenticated){ //throw error exception for incorrect account
         printf("Username or Password is incorrect, Please check again...\n");
-        write_all(client_sock, "Authentication failed.\r\n", 24);
+        //telnet_writeln (adds \r\n)
+        telnet_writeln(client_sock, "Authentication failed.");
         close(client_sock);
         return NULL;
     }
 
     //otherwise, when authentication is 1 which is found from the db
-    printf("User '%s' authenticate successfully\n", username);
-    write_all(client_sock, "Authentication successful!\r\n", 28);
+    printf("User '%s' authenticated successfully\n", username);
+    telnet_writeln(client_sock, "Authentication successful!");
 
     while(1){
-        write_all(client_sock, "> ", 2); 
+        telnet_write(client_sock, "> ", 2); 
 
-        read_status = read_line(client_sock, buffer, BUFFER_SIZE); //take client input to buffer
+        read_status = telnet_read_line(client_sock, buffer, BUFFER_SIZE);
         if(read_status <= 0){
             fprintf(stderr, "Connection closed by %s\n", username);
+            break;
         }
 
         printf("Received from %s: %s\n", username, buffer);
 
-        char response_text[BUFFER_SIZE];
         if(strcmp(buffer, "quit") == 0 || strcmp(buffer, "bye") == 0){
-            strcpy(response_text, "Goodbye!\n\n");
-            write_all(client_sock, response_text, strlen(response_text));
+            telnet_writeln(client_sock, "Goodbye!");
             printf("Client %s disconnected\n", username);
-            break; //terminated clien connection --> break the loop
+            break;
         }
-        else{
-            const char *prefix = "You said: ";
-            const char *suffix = "\r\n";
-
-            int reply_len = BUFFER_SIZE - strlen(prefix) - strlen(suffix) - 1;
-
-            snprintf(response_text, BUFFER_SIZE, "%s%.*s%s", prefix, reply_len, buffer, suffix);
-            write_all(client_sock, response_text, strlen(response_text));
+        else {
+            char response_text[BUFFER_SIZE];
+            snprintf(response_text, BUFFER_SIZE, "You said: %s", buffer);
+            telnet_writeln(client_sock, response_text);
         }
     }
     close(client_sock);

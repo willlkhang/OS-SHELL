@@ -42,71 +42,75 @@ int main(int argc, char *argv[]) {
     }
     printf("Connected to server at %s.\n", server_ip);
     
+    // --- 1. AUTHENTICATION ---
+    // The server will send commands first. 
+    // telnet_read_prompt will handle them automatically.
+    
     char username[BUFFER_SIZE], password[BUFFER_SIZE];
-    char server_prompt[BUFFER_SIZE]; //for reading prompts liek username:
+    char server_prompt[BUFFER_SIZE];
 
-    if (read_all(sock, server_prompt, 10) != 0) { //advoid deadlock
+    // Read "Username: " prompt (10 bytes)
+    // Use telnet_read_prompt, which will handle negotiations.
+    if (telnet_read_prompt(sock, server_prompt, 10) <= 0) {
         fprintf(stderr, "Server disconnected during authentication\n");
         close(sock);
         return 1;
     }
-    server_prompt[10] = '\0'; //sikipping enterkey
     printf("%s", server_prompt); // Print the prompt
     
     fgets(username, sizeof(username), stdin);
-    write_all(sock, username, strlen(username)); //send to sever
+    username[strcspn(username, "\n")] = 0; // Strip newline
+    telnet_writeln(sock, username); // Send with \r\n
 
-    //sever waiting to read password from user
-    if (read_all(sock, server_prompt, 10) != 0) { 
+    // Read "Password: " prompt (10 bytes)
+    if (telnet_read_prompt(sock, server_prompt, 10) <= 0) {
         fprintf(stderr, "Server disconnected during auth\n");
         close(sock);
         return 1;
     }
-    server_prompt[10] = '\0'; // Null-terminate
     printf("%s", server_prompt); // Print the prompt
     
-    // Get password from user
     fgets(password, sizeof(password), stdin);
-    write_all(sock, password, strlen(password)); // Send it
+    password[strcspn(password, "\n")] = 0; // Strip newline
+    telnet_writeln(sock, password); // Send with \r\n
 
-    // Read auth response (this IS a line, so read_line is correct)
+    // Read auth response (this IS a line)
     char auth_response[BUFFER_SIZE];
-    if (read_line(sock, auth_response, BUFFER_SIZE) <= 0) {
+    if (telnet_read_line(sock, auth_response, BUFFER_SIZE) <= 0) {
         fprintf(stderr, "Server disconnected during auth response\n");
         close(sock);
         return 1;
     }
-    printf("Server: %s\n", auth_response);
+    printf("Server: %s\n", auth_response); // telnet_read_line stripped \n
 
     if (strncmp(auth_response, "Authentication failed", 21) == 0) {
         close(sock);
         return 0;
     }
 
-    // --- 2. Message Exchange ---
+    // --- 2. MESSAGE EXCHANGE ---
     while(1) {
         // Read the server's "> " prompt (2 bytes)
-        if (read_all(sock, server_prompt, 2) != 0) { // <-- FIX: Use read_all
+        if (telnet_read_prompt(sock, server_prompt, 2) <= 0) {
             fprintf(stderr, "Server disconnected\n");
             break;
         }
-        server_prompt[2] = '\0'; // Null-terminate
         printf("%s", server_prompt); // Print the "> "
         
         // Get input from user
         fgets(buffer, BUFFER_SIZE, stdin);
-        write_all(sock, buffer, strlen(buffer)); // Send the line
+        buffer[strcspn(buffer, "\n")] = 0; // Strip newline
+        telnet_writeln(sock, buffer); // Send line with \r\n
 
         // Read the server's response (this IS a line)
         char response_text[BUFFER_SIZE];
-        if (read_line(sock, response_text, BUFFER_SIZE) <= 0) {
+        if (telnet_read_line(sock, response_text, BUFFER_SIZE) <= 0) {
             printf("Server disconnected.\n");
             break;
         }
         
         printf("Server: %s\n", response_text);
 
-        buffer[strcspn(buffer, "\n")] = 0; // Remove newline for "quit" check
         if (strcmp(buffer, "quit") == 0) {
             break;
         }
