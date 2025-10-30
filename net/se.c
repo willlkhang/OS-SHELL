@@ -27,7 +27,7 @@ struct user user_db[] = {
     {"CCC", "ccc"},
     {"test", "test"}
 };
-const int NUM_USERS = sizeof(user_db) / sizeof(struct user);
+const int NUM_USERS = sizeof(user_db) / sizeof(user_db[0]);
 
 
 void *handle_client(void *arg) {
@@ -120,8 +120,8 @@ void *handle_client(void *arg) {
             break;
         }
         else {
-            char response_text[BUFFER_SIZE];
-            snprintf(response_text, BUFFER_SIZE, "You said: %s", buffer);
+            char response_text[BUFFER_SIZE + 25];
+            snprintf(response_text, sizeof(response_text), "You said: %s", buffer);
             telnet_writeln(client_sock, response_text);
         }
     }
