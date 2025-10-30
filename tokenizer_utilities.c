@@ -5,33 +5,34 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+
 void process_quoted_string(const char **p_ptr, char *tokens[], int *ntok){
     const char *p = *p_ptr;
     char quote = *p++;
-    const char *start = p;
     char buf[4096];
     int bi = 0;
     
     while (*p && *p != quote) {
-        if (*p == '\\' && quote == '"' && *(p+1) != '\0') {
-            ++p;
-
-            buf[bi++] = *p ? *p : '\\';
+        if (quote == '"' && *p == '\\' && (*(p+1) == '"' || *(p+1) == '\\')) {
+            // Handle escaped double-quote or backslash inside double quotes
+            ++p; // skip backslash
+            buf[bi++] = *p;
             if (*p) ++p;
-
+        } else if (quote == '\'' && *p == '\\' && *(p+1) == '\'') {
+            // Handle escaped single-quote inside single quotes
+            p += 2;
+            buf[bi++] = '\'';
         } else {
             buf[bi++] = *p++;
         }
-        if (bi >= (int)sizeof(buf)-1) 
-            break;
+        if (bi >= (int)sizeof(buf)-1) break;
     }
-
     buf[bi] = '\0';
     tokens[(*ntok)++] = strdup(buf);
     if (*p == quote) ++p;
-
     *p_ptr = p;
 }
+
 
 void process_escaped_character(const char **p_ptr, char *tokens[], int *ntok){
     const char *p = *p_ptr;
