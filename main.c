@@ -15,6 +15,7 @@
 int main(int argc, char *argv[])
 {
     activate_signal_handlers();
+
     init_interactive_input();
 
     char *line = NULL, prompt_buf[128];
@@ -25,6 +26,7 @@ int main(int argc, char *argv[])
     setup_history(h);
 
     while (1) {
+        activate_signal_handlers();
         // Use interactive input with arrow key support
         line = get_interactive_input(prompt_buf, h);
         if (!line) break;

@@ -15,7 +15,7 @@ void sigchld_processor(int signal) {
 
     //WNOHANG --> dont' block if not child's exited yet
     while((pid = waitpid(-1, &status, WNOHANG)) > 0) { //reap to avoid accumulating zomebie processes
-        //printf("At status %d with %d\n", status, pid);
+        printf("At status %d with %d\n", status, pid);
     }
 }
 
@@ -28,13 +28,8 @@ void activate_signal_handlers(){
     sa_chld.sa_flags = SA_RESTART;
     sigaction(SIGCHLD, &sa_chld, NULL);
 
-    // Use sigaction for all signals to ensure SA_RESTART flag
-    struct sigaction sa_ignore;
-    sa_ignore.sa_handler = doing_nothing_method;
-    sigemptyset(&sa_ignore.sa_mask);
-    sa_ignore.sa_flags = SA_RESTART;
-    
-    sigaction(SIGINT, &sa_ignore, NULL);  // CTRL-C
-    sigaction(SIGTSTP, &sa_ignore, NULL); // CTRL-Z
-    sigaction(SIGQUIT, &sa_ignore, NULL); // CTRL-(\)
-}   
+
+    signal(SIGINT, doing_nothing_method); // this means when SIGINT is enter, the program will jump into doing nothing method
+    signal(SIGTSTP, doing_nothing_method); // this means when SIGINT is enter, the program will jump into doing nothing method
+    signal(SIGQUIT, doing_nothing_method); // this means when SIGINT is enter, the program will jump into doing nothing method
+}
