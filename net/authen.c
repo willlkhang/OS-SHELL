@@ -136,7 +136,7 @@ void handle_client(int socket) {
         if (shell_choice == 1) {
             execl("/bin/bash", "bash", "--login", NULL);
         } else {
-            execl("./../run", "run", NULL);
+            execl("./../shell/run", "run", NULL);
             perror("execl run failed");
         }
         perror("Failed to start shell");
