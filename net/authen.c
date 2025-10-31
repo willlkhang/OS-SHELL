@@ -7,10 +7,17 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <errno.h>
-
-#include "account_db.h"
+#include <signal.h>
 
 #define BUFFER_SIZE 1024
+
+const int user_count = 4;
+UserAccount user_accounts[MAX_USERS] = {
+    {"AAA", "aaa"},
+    {"BBB", "bbb"},
+    {"CCC", "ccc"},
+    {"test", "test"}
+};
 
 void authenticate(int socket) {
     char opcode = 'A';

@@ -9,7 +9,6 @@
 #define SERVER_PORT 40338
 #define BUFFER_SIZE 1024
 
-#include "account_db.h"
 #include "authen.h"
 
 void handle_sigchld(int sig);

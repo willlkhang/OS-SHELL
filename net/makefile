@@ -1,21 +1,27 @@
 all: ser cli
 
-ser: se.o stream.o
-	gcc se.o stream.o -o ser -lpthread
+ser: ser.o authen.o telnet.o
+	gcc -Wall ser.o authen.o telnet.o -o ser
+    
+cli: cli.o telnet.o authen.o shell_communicate.o
+	gcc -Wall cli.o telnet.o authen.o shell_communicate.o -o cli
 
-cli: cl.o stream.o
-	gcc cl.o stream.o -o cli
+ser.o: ser.c
+	gcc -Wall -c ser.c 
 
-se.o: se.c
-	gcc -c se.c 
+cli.o: cli.c
+	gcc -Wall -c cli.c
 
-cl.o: cl.c
-	gcc -c cl.c
+telnet.o: telnet.c telnet.h
+	gcc -Wall -c telnet.c telnet.h
 
-stream.o: stream.c stream.h
-	gcc -c stream.c stream.h
+shell_communicate.o: shell_communicate.c shell_communicate.h
+	gcc -Wall -c shell_communicate.c shell_communicate.h
 
+authen.o: authen.c authen.h account_db.h
+	gcc -Wall -c authen.c authen.h account_db.h
+
+cls: 
+	rm -f *.gch *.o
 clean:
 	rm -f *.gch *.o cli ser
-
-

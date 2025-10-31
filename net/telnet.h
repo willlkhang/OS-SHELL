@@ -7,4 +7,4 @@
 ssize_t send_all(int sock, const void *buf, size_t len);
 ssize_t recv_all(int sock, void *buf, size_t len);
 
-#endif TELNET_H
+#endif //TELNET_H

@@ -10,6 +10,8 @@
 
 #define BUFFER_SIZE 1024
 
+#include "telnet.h"
+
 void request_shell(int socket) {
     char opcode = 'B';
     int shell_choice = 0;
