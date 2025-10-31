@@ -7,20 +7,22 @@
 #include <ncurses.h>
 
 int main(){
-    initscr();
 
-    // Print a string (similar to printf) to the virtual screen.
-    printw("Hello, ncurses!\n");
-    printw("Press any key to exit...");
+    printf("Hello bro, test the telnet communication\n\n");
+    // initscr();
 
-    // Puts the virtual screen contents onto the actual screen.
-    refresh();
+    // // Print a string (similar to printf) to the virtual screen.
+    // printw("Hello, ncurses!\n");
+    // printw("Press any key to exit...");
 
-    // Wait for user input (a single character).
-    getch();
+    // // Puts the virtual screen contents onto the actual screen.
+    // refresh();
 
-    // End ncurses mode and restore the terminal.
-    endwin();
+    // // Wait for user input (a single character).
+    // getch();
+
+    // // End ncurses mode and restore the terminal.
+    // endwin();
 
     return 0;
 

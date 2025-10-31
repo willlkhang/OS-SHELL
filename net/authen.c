@@ -1,68 +1,77 @@
+#include "authen.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <arpa/inet.h>
-#include <sys/wait.h>
-#include <signal.h>
+#include <unistd.h>
+#include <stdint.h>
+#include <errno.h>
 
-#define SERVER_PORT 40338
+#include "account_db.h"
+
 #define BUFFER_SIZE 1024
-#define MAX_USERS 10
 
-typedef struct {
+void authenticate(int socket) {
+    char opcode = 'A';
     char username[50];
     char password[50];
-} UserAccount;
 
-UserAccount user_accounts[MAX_USERS] = {
-    {"AAA", "aaa"},
-    {"BBB", "bbb"},
-    {"CCC", "ccc"},
-    {"test", "test"}
-
-};
-int user_count = 4;//= sizeof(user_accounts) / sizeof(UserAccount);
-
-void handle_client(int client_socket);
-int validate_credentials(const char *username, const char *password);
-void handle_sigchld(int sig);
-
-int main() {
-    int server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    struct sockaddr_in server_addr;
-
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(SERVER_PORT);
-    server_addr.sin_addr.s_addr = INADDR_ANY;
-
-    bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr));
-    listen(server_socket, 5);
-
-    printf("Server is listening on port %d\n", SERVER_PORT);
-
-    signal(SIGCHLD, handle_sigchld);
-
-    while (1) {
-        int client_socket = accept(server_socket, NULL, NULL);
-        if (client_socket < 0) {
-            perror("Server accept failed");
-            continue;
-        }
-
-        if (fork() == 0) {
-            close(server_socket);
-            handle_client(client_socket);
-            exit(0);
-        }
-        close(client_socket);
+    printf("Enter username: ");
+    if (scanf("%49s", username) != 1) {
+        fprintf(stderr, "Failed to read username\n");
+        exit(EXIT_FAILURE);
+    }
+    printf("Enter password: ");
+    if (scanf("%49s", password) != 1) {
+        fprintf(stderr, "Failed to read password\n");
+        exit(EXIT_FAILURE);
     }
 
-    close(server_socket);
+    uint8_t user_len = (uint8_t)strlen(username);
+    uint8_t pass_len = (uint8_t)strlen(password);
+
+    // Send packet
+    if (send_all(socket, &opcode, 1) < 0 ||
+        send_all(socket, &user_len, 1) < 0 ||
+        send_all(socket, username, user_len) < 0 ||
+        send_all(socket, &pass_len, 1) < 0 ||
+        send_all(socket, password, pass_len) < 0) {
+        perror("send");
+        close(socket);
+        exit(EXIT_FAILURE);
+    }
+
+    // Expect two bytes: ack_opcode, ack_code
+    char ack_opcode = 0, ack_code = 0;
+    if (recv_all(socket, &ack_opcode, 1) < 0 || recv_all(socket, &ack_code, 1) < 0) {
+        fprintf(stderr, "Failed to receive authentication response\n");
+        close(socket);
+        exit(EXIT_FAILURE);
+    }
+
+    if (ack_code == '0') {
+        printf("Authentication successful.\n");
+    } else {
+        fprintf(stderr, "Authentication failed with code: %c\n", ack_code);
+        close(socket);
+        exit(EXIT_FAILURE);
+    }
+}
+
+int validate_credentials(const char *username, const char *password) {
+    for (int i = 0; i < user_count; i++) {
+        if (strcmp(user_accounts[i].username, username) == 0 &&
+            strcmp(user_accounts[i].password, password) == 0) {
+            return 1;
+        }
+    }
     return 0;
 }
 
 void handle_client(int socket) {
+    signal(SIGPIPE, SIG_IGN);
+
     char opcode, ack_code;
     uint8_t user_len, pass_len;
     char username[BUFFER_SIZE], password[BUFFER_SIZE];
@@ -121,6 +130,7 @@ void handle_client(int socket) {
             execl("/bin/bash", "bash", "--login", NULL);
         } else {
             execl("./../run", "run", NULL);
+            perror("execl run failed");
         }
         perror("Failed to start shell");
         exit(1);
@@ -190,18 +200,3 @@ void handle_client(int socket) {
         }
     }
 }
-
-int validate_credentials(const char *username, const char *password) {
-    for (int i = 0; i < user_count; i++) {
-        if (strcmp(user_accounts[i].username, username) == 0 &&
-            strcmp(user_accounts[i].password, password) == 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-void handle_sigchld(int sig) {
-    while (waitpid(-1, NULL, WNOHANG) > 0);
-}
-

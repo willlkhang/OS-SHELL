@@ -17,3 +17,5 @@ stream.o: stream.c stream.h
 
 clean:
 	rm -f *.gch *.o cli ser
+
+
